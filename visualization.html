@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Road Optimization Visualization</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        h2 {
+            color: #34495e;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+        h3 { margin: 10px 0 5px; color: #2c3e50; }
+        .summary-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .summary-box p { margin: 5px 0; font-size: 15px; }
+        .summary-box strong { color: #2c3e50; }
+        .edge-list {
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            border-radius: 6px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .tab-btn {
+            padding: 10px 25px;
+            border: 2px solid #3498db;
+            background: white;
+            color: #3498db;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .tab-btn.active {
+            background: #3498db;
+            color: white;
+        }
+        .tab-btn:hover { opacity: 0.8; }
+          .tab-content { display: none; }
+        .tab-content.active { display: block; }
+    .step-box {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+    .step-box .step-title {
+            font-weight: bold;
+            color: #2980b9;
+            margin-bottom: 5px;
+        }
+       table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        th, td {
+            border: 1px solid #bdc3c7;
+            padding: 8px 12px;
+            text-align: center;
+        }
+        th { background: #34495e; color: white; }
+        .selected-dp { background: #d5f5e3; } 
+        .selected-greedy { background: #d6eaf8; } 
+        .skipped { background: #f2f3f4; color: #999; } 
+        .decision { margin: 4px 0; padding: 6px 10px; border-radius: 4px; font-family: monospace; font-size: 13px; }
+        .decision.picked { background: #d6eaf8; border-left: 4px solid #2980b9; }
+        .decision.skip { background: #f2f3f4; border-left: 4px solid #bdc3c7; color: #888; }        
+        .compare-table th { background: #2c3e50; }
+        .compare-table td { font-weight: bold; }
+        .file-section {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .file-section label {
+            display: inline-block;
+            padding: 8px 20px;
+            background: #27ae60;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .file-section label:hover { opacity: 0.85; }
+        .file-section input[type="file"] { display: none; }
+        .file-section p { margin-top: 8px; font-size: 13px; color: #777; }
+    </style>
+</head>
+<body>
+    <h1>🛣️ Road Optimization Visualization</h1>
+    <p style="text-align:center; margin-bottom:20px; color:#777;">DP (Knapsack) vs Greedy — Step-by-Step</p>
+    <div class="file-section">
+        <label for="fileInput">📂 Load input.txt</label>
+        <input type="file" id="fileInput" accept=".txt" onchange="loadFile(event)">
+        <p>Or using built-in sample data below</p>
+    </div>
+    <div class="summary-box" id="summaryBox">
+    </div>
+    <h2>📊 Graph Edges</h2>
+    <div class="edge-list" id="edgeList">
+    </div>
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="showTab('dp')">DP (Knapsack)</button>
+        <button class="tab-btn" onclick="showTab('greedy')">Greedy</button>
+        <button class="tab-btn" onclick="showTab('compare')">Compare</button>
+    </div>
+    <div class="tab-content active" id="tab-dp"></div>
+    <div class="tab-content" id="tab-greedy"></div>
+    <div class="tab-content" id="tab-compare"></div>
+    <script>
+    var data = {
+        budget: 100,
+        nodes: [
+            { id: 0, type: "Important" },
+            { id: 1, type: "Not-important" },
+            { id: 2, type: "Important" },
+            { id: 3, type: "Not-important" },
+            { id: 4, type: "Important" }
+        ],
+        edges: [
+            { id: 0, u: 0, v: 1, cost: 10, traffic: 5, damage: 0, complaints: 0 },
+            { id: 1, u: 1, v: 2, cost: 50, traffic: 1, damage: 0, complaints: 0 },
+            { id: 2, u: 0, v: 2, cost: 60, traffic: 5, damage: 0, complaints: 0 },
+            { id: 3, u: 2, v: 3, cost: 30, traffic: 2, damage: 0, complaints: 0 },
+            { id: 4, u: 1, v: 3, cost: 40, traffic: 4, damage: 0, complaints: 0 },
+            { id: 5, u: 3, v: 4, cost: 20, traffic: 1, damage: 0, complaints: 0 }
+        ]
+    };
+    function calcPriority(edge) {
+        return edge.complaints * 5 + edge.damage * 3 + edge.traffic * 5;
+    }
+    function setPriorities() {
+        for (var i = 0; i < data.edges.length; i++) {
+            data.edges[i].priority = calcPriority(data.edges[i]);
+        }
+    }
+    function parseInputTxt(text) {
+        var lines = text.trim().split(/\r?\n/);
+        var idx = 0;
+        var budget = parseInt(lines[idx++]);
+        var numNodes = parseInt(lines[idx++]);
+        var nodes = [];
+        for (var i = 0; i < numNodes; i++) {
+            nodes.push({ id: i, type: lines[idx++].trim() });
+        }
+        var numEdges = parseInt(lines[idx++]);
+        var edges = [];
+        for (var i = 0; i < numEdges; i++) {
+            var parts = lines[idx++].trim().split(/\s+/);
+            edges.push({
+                id: i,
+                u: parseInt(parts[0]),
+                v: parseInt(parts[1]),
+                cost: parseInt(parts[2]),
+                traffic: parseInt(parts[3]),
+                damage: parseInt(parts[4]),
+                complaints: parseInt(parts[5])
+            });
+        }
+        return { budget: budget, nodes: nodes, edges: edges };
+    }
+function loadFile(event) {
+        var file = event.target.files[0];
+        if (!file) return;
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            data = parseInputTxt(e.target.result);
+            setPriorities();
+            renderAll();
+        };
+        reader.readAsText(file);
+    }    
+    function runDP() {
+        var edges = data.edges;
+        var budget = data.budget;
+        var n = edges.length;   
+        var roads = [];
+        for (var i = 0; i < n; i++) {
+            roads.push({
+                idx: i,
+                u: edges[i].u,
+                v: edges[i].v,
+                cost: edges[i].cost,
+                priority: edges[i].priority
+            });
+        }
+        var dp = [];
+        for (var i = 0; i <= n; i++) {
+            dp[i] = [];
+            for (var w = 0; w <= budget; w++) {
+                dp[i][w] = 0;
+            }
+        }
+        for (var i = 1; i <= n; i++) {
+            var wt = roads[i - 1].cost;
+            var val = roads[i - 1].priority;
+            for (var w = 0; w <= budget; w++) {
+                if (wt <= w) {
+                    dp[i][w] = Math.max(dp[i - 1][w], dp[i - 1][w - wt] + val);
+                } else {
+                    dp[i][w] = dp[i - 1][w];
+                }
+            }
+        }
+        var selected = [];
+        var res = dp[n][budget];
+        var w = budget;
+        for (var i = n; i > 0 && res > 0; i--) {
+            if (res !== dp[i - 1][w]) {
+                selected.push(roads[i - 1]);
+                res -= roads[i - 1].priority;
+                w -= roads[i - 1].cost;
+            }
+        }
+        selected.reverse();
+        var totalCost = 0, totalPriority = 0;
+        for (var s = 0; s < selected.length; s++) {
+            totalCost += selected[s].cost;
+            totalPriority += selected[s].priority;
+        }
+        return {
+            roads: roads,
+            selected: selected,
+            totalCost: totalCost,
+            totalPriority: totalPriority,
+            maxPriority: dp[n][budget]
+        };
+    }
+    function runGreedy() {
+        var edges = data.edges;
+        var budget = data.budget;
+   var roads = [];
+        for (var i = 0; i < edges.length; i++) {
+            var ratio = edges[i].cost === 0 ? 999999 : edges[i].priority / edges[i].cost;
+            roads.push({
+                idx: i,
+                u: edges[i].u,
+                v: edges[i].v,
+                cost: edges[i].cost,
+                priority: edges[i].priority,
+                ratio: Math.round(ratio * 100) / 100
+            });
+        }    
+        for (var i = 0; i < roads.length - 1; i++) {
+            for (var j = 0; j < roads.length - 1 - i; j++) {
+                if (roads[j].ratio < roads[j + 1].ratio) {
+                    var temp = roads[j];
+                    roads[j] = roads[j + 1];
+                    roads[j + 1] = temp;
+                }
+            }
+        }
+        var selected = [];
+        var decisions = [];
+        var remaining = budget;
+        for (var i = 0; i < roads.length; i++) {
+            if (roads[i].cost <= remaining) {
+                remaining -= roads[i].cost;
+                selected.push(roads[i]);
+                decisions.push({ road: roads[i], picked: true, budgetLeft: remaining });
+            } else {
+                decisions.push({ road: roads[i], picked: false, budgetLeft: remaining });
+            }
+        }
+        var totalCost = 0, totalPriority = 0;
+        for (var s = 0; s < selected.length; s++) {
+            totalCost += selected[s].cost;
+            totalPriority += selected[s].priority;
+        }
+        return {
+            sortedRoads: roads,
+            selected: selected,
+            decisions: decisions,
+            totalCost: totalCost,
+            totalPriority: totalPriority
+        };
+    }
+    function renderSummary() {
+        var box = document.getElementById("summaryBox");
+        box.innerHTML =
+            "<h2>📋 Input Summary</h2>" +
+            "<p><strong>Budget:</strong> " + data.budget + "</p>" +
+            "<p><strong>Number of Nodes:</strong> " + data.nodes.length + "</p>" +
+            "<p><strong>Number of Roads:</strong> " + data.edges.length + "</p>" +
+            "<p><strong>Nodes:</strong> " +
+            data.nodes.map(function(n) { return n.id + " (" + n.type + ")"; }).join(", ") +
+            "</p>";
+    }
+    function renderEdges() {
+        var el = document.getElementById("edgeList");
+        var html = "";
+        for (var i = 0; i < data.edges.length; i++) {
+            var e = data.edges[i];
+            html += e.u + " --[cost:" + e.cost + ", priority:" + e.priority + "]--> " + e.v + "<br>";
+        }
+        el.innerHTML = html;
+    }
+    function renderDP() {
+        var result = runDP();
+        var tab = document.getElementById("tab-dp");
+
+        
+        function isSelected(road) {
+            for (var s = 0; s < result.selected.length; s++) {
+                if (result.selected[s].idx === road.idx) return true;
+            }
+            return false;
+        }
+
+        var html = "";
+
+        
+        html += '<div class="step-box">';
+        html += '<div class="step-title">Step 1: Load all roads</div>';
+        html += "<p>Loaded " + result.roads.length + " roads from input.</p>";
+        html += "</div>";
+
+        
+        html += '<div class="step-box">';
+        html += '<div class="step-title">Step 2: Calculate priority for each road</div>';
+        html += "<p>Formula: priority = complaints×5 + damage×3 + traffic×5</p>";
+        html += "<table><tr><th>Road</th><th>Cost</th><th>Traffic</th><th>Damage</th><th>Complaints</th><th>Priority</th></tr>";
+        for (var i = 0; i < data.edges.length; i++) {
+            var e = data.edges[i];
+            html += "<tr><td>" + e.u + " → " + e.v + "</td><td>" + e.cost + "</td><td>" + e.traffic + "</td><td>" + e.damage + "</td><td>" + e.complaints + "</td><td><strong>" + e.priority + "</strong></td></tr>";
+        }
+        html += "</table></div>";
+
+        
+        html += '<div class="step-box">';
+        html += '<div class="step-title">Step 3: Run 0/1 Knapsack (Budget = ' + data.budget + ')</div>';
+        html += "<p>Build DP table: dp[i][w] = max priority using first i roads with budget w</p>";
+        html += "<p>Max achievable priority = <strong>" + result.maxPriority + "</strong></p>";
+        html += "</div>";
+
+        
+        html += '<div class="step-box">';
+        html += '<div class="step-title">Step 4: Selected roads (backtracking)</div>';
+        html += "<table><tr><th>Road</th><th>Cost</th><th>Priority</th><th>Status</th></tr>";
+        for (var i = 0; i < result.roads.length; i++) {
+            var r = result.roads[i];
+            var sel = isSelected(r);
+            var cls = sel ? "selected-dp" : "";
+            var status = sel ? "✅ Selected" : "—";
+            html += '<tr class="' + cls + '"><td>' + r.u + " → " + r.v + "</td><td>" + r.cost + "</td><td>" + r.priority + "</td><td>" + status + "</td></tr>";
+        }
+        html += "</table>";
+        html += "<p><strong>Total Cost:</strong> " + result.totalCost + " / " + data.budget + "</p>";
+        html += "<p><strong>Total Priority:</strong> " + result.totalPriority + "</p>";
+        html += "</div>";
+
+        tab.innerHTML = html;
+    }
+
+    function renderGreedy() {
+        var result = runGreedy();
+        var tab = document.getElementById("tab-greedy");
+
+        var html = "";
+
+        
+        html += '<div class="step-box">';
+        html += '<div class="step-title">Step 1: Sort roads by priority/cost ratio (descending)</div>';
+        html += "<table><tr><th>#</th><th>Road</th><th>Cost</th><th>Priority</th><th>Ratio (P/C)</th></tr>";
+        for (var i = 0; i < result.sortedRoads.length; i++) {
+            var r = result.sortedRoads[i];
+            html += "<tr><td>" + (i + 1) + "</td><td>" + r.u + " → " + r.v + "</td><td>" + r.cost + "</td><td>" + r.priority + "</td><td>" + r.ratio + "</td></tr>";
+        }
+        html += "</table></div>";
+
+        
+        html += '<div class="step-box">';
+        html += '<div class="step-title">Step 2: Pick roads one-by-one (Budget = ' + data.budget + ')</div>';
+        for (var i = 0; i < result.decisions.length; i++) {
+            var d = result.decisions[i];
+            var r = d.road;
+            if (d.picked) {
+                html += '<div class="decision picked">Checking road ' + r.u + "→" + r.v + " (cost:" + r.cost + ") → ✅ Selected | Budget left: " + d.budgetLeft + "</div>";
+            } else {
+                html += '<div class="decision skip">Checking road ' + r.u + "→" + r.v + " (cost:" + r.cost + ") → ❌ Skipped (not enough budget)</div>";
+            }
+        }
+        html += "<br><p><strong>Total Cost:</strong> " + result.totalCost + " / " + data.budget + "</p>";
+        html += "<p><strong>Total Priority:</strong> " + result.totalPriority + "</p>";
+        html += "</div>";
+
+        tab.innerHTML = html;
+    }
+
+    function renderCompare() {
+        var dpResult = runDP();
+        var greedyResult = runGreedy();
+        var tab = document.getElementById("tab-compare");
+
+        var dpRoads = dpResult.selected.map(function(r) { return r.u + "→" + r.v; }).join(", ");
+        var greedyRoads = greedyResult.selected.map(function(r) { return r.u + "→" + r.v; }).join(", ");
+
+        var winner = "";
+        if (dpResult.totalPriority > greedyResult.totalPriority) {
+            winner = "DP wins (higher priority)";
+        } else if (greedyResult.totalPriority > dpResult.totalPriority) {
+            winner = "Greedy wins (higher priority)";
+        } else {
+            winner = "Tie!";
+        }
+
+        var html = "";
+        html += '<div class="step-box">';
+        html += "<h3>📊 DP vs Greedy Comparison</h3>";
+        html += '<table class="compare-table">';
+        html += "<tr><th>Metric</th><th>DP (Knapsack)</th><th>Greedy</th></tr>";
+        html += "<tr><td>Total Cost</td><td>" + dpResult.totalCost + "</td><td>" + greedyResult.totalCost + "</td></tr>";
+        html += "<tr><td>Total Priority</td><td>" + dpResult.totalPriority + "</td><td>" + greedyResult.totalPriority + "</td></tr>";
+        html += "<tr><td>Roads Selected</td><td>" + dpResult.selected.length + "</td><td>" + greedyResult.selected.length + "</td></tr>";
+        html += "<tr><td>Selected Roads</td><td>" + dpRoads + "</td><td>" + greedyRoads + "</td></tr>";
+        html += "<tr><td><strong>Winner</strong></td><td colspan='2' style='text-align:center; font-size:16px;'>" + winner + "</td></tr>";
+        html += "</table></div>";
+
+        html += '<div class="step-box">';
+        html += "<h3>Why the difference?</h3>";
+        html += "<p><strong>DP (Knapsack):</strong> Tries all combinations to find the optimal solution. Guarantees maximum priority within budget.</p>";
+        html += "<p><strong>Greedy:</strong> Picks the best ratio road first. Fast but may not find the optimal solution.</p>";
+        html += "</div>";
+
+        tab.innerHTML = html;
+    }
+
+    function showTab(name) {
+        // hide all tabs
+        var tabs = document.querySelectorAll(".tab-content");
+        for (var i = 0; i < tabs.length; i++) tabs[i].classList.remove("active");
+
+        
+        var btns = document.querySelectorAll(".tab-btn");
+        for (var i = 0; i < btns.length; i++) btns[i].classList.remove("active");
+
+        
+        document.getElementById("tab-" + name).classList.add("active");
+
+        
+        var labels = { dp: 0, greedy: 1, compare: 2 };
+        btns[labels[name]].classList.add("active");
+    }
+    function renderAll() {
+        setPriorities();
+        renderSummary();
+        renderEdges();
+        renderDP();
+        renderGreedy();
+        renderCompare();
+    }
+    renderAll();
+    </script>
+</body>
+</html>
