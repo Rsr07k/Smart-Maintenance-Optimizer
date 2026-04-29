@@ -6,7 +6,7 @@
 
 using namespace std;
 
-// show articulation points
+
 void showArticulationPoints(int graph[100][100], bool articulation[100],
                             bool &done) {
 
@@ -30,7 +30,7 @@ void showArticulationPoints(int graph[100][100], bool articulation[100],
         cout << "  NONE\n";
 }
 
-// show bridges
+
 void showBridges(vector<int> &bridgeIndices, bool &done) {
 
     if (!done) {

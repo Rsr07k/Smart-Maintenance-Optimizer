@@ -6,7 +6,6 @@
 
 using namespace std;
 
-// check if removing road breaks connectivity
 int critical(const Road &road) {
 
     int u = road.getu();

@@ -5,15 +5,14 @@
 
 using namespace std;
 
-// build adjacency matrix from Roads[]
+
 void buildAdjMatrix(int graph[100][100], int numNodes, int numEdges) {
 
-    // clear matrix
     for (int i = 0; i < numNodes; i++)
         for (int j = 0; j < numNodes; j++)
             graph[i][j] = 0;
 
-    // fill edges
+  
     for (int i = 0; i < numEdges; i++) {
         int u = Roads[i].u;
         int v = Roads[i].v;
@@ -24,7 +23,7 @@ void buildAdjMatrix(int graph[100][100], int numNodes, int numEdges) {
     }
 }
 
-// print matrix
+
 void showMatrix(int graph[100][100], int numNodes) {
 
     cout << "\nAdjacency Matrix\n\n";

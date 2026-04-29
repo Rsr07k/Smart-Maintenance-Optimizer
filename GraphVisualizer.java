@@ -70,7 +70,7 @@ public class GraphVisualizer extends Application {
         stage.show();
     }
 
-    // ===================== GRAPH DRAWING =====================
+    
 
     Pane buildGraphPane() {
         Pane pane = new Pane();
@@ -88,7 +88,7 @@ public class GraphVisualizer extends Application {
             nodeY[i] = CENTER_Y + RADIUS * Math.sin(angle);
         }
 
-        // draw edges
+        
         for (int i = 0; i < E; i++) {
             int u = edges[i][0], v = edges[i][1];
 
@@ -106,7 +106,7 @@ public class GraphVisualizer extends Application {
             pane.getChildren().addAll(line, label);
         }
 
-        // draw nodes
+       
         for (int i = 0; i < N; i++) {
             Circle c = new Circle(nodeX[i], nodeY[i], 25);
             String type = types[i].trim();
@@ -132,7 +132,7 @@ public class GraphVisualizer extends Application {
         return pane;
     }
 
-    // ===================== STATUS PANEL =====================
+  
 
     VBox buildStatusPanel() {
         VBox panel = new VBox(8);
@@ -183,7 +183,7 @@ public class GraphVisualizer extends Application {
         return l;
     }
 
-    // ===================== BUTTONS =====================
+ 
 
     HBox buildButtonBar() {
         HBox bar = new HBox(15);
@@ -231,7 +231,7 @@ public class GraphVisualizer extends Application {
         return bar;
     }
 
-    // ===================== GREEDY STEP-BY-STEP =====================
+   
 
     void runGreedyStepByStep() {
         isRunning = true;
@@ -239,7 +239,7 @@ public class GraphVisualizer extends Application {
         lblTimeTaken.setText("Time Taken: calculating...");
         lblTimeComplexity.setText("Time Complexity: calculating...");
 
-        // sort edges by priority/cost ratio (same logic as C++)
+      
         int[] order = new int[E];
         for (int i = 0; i < E; i++) order[i] = i;
 
@@ -269,7 +269,7 @@ public class GraphVisualizer extends Application {
                 int u = edges[idx][0], v = edges[idx][1];
                 int edgeCost = edges[idx][2], edgePri = edges[idx][3];
 
-                // STEP 1: highlight orange = checking
+                
                 final int stepNum = ++step;
                 Platform.runLater(() -> {
                     edgeLines[idx].setStroke(Color.ORANGE);
@@ -322,7 +322,7 @@ public class GraphVisualizer extends Application {
                 delay(700);
             }
 
-            // done
+          
             long elapsed = (System.nanoTime() - startTime) / 1_000_000;
             final int totalC = cost, totalP = priority;
             Platform.runLater(() -> {
@@ -337,7 +337,7 @@ public class GraphVisualizer extends Application {
         }).start();
     }
 
-    // ===================== DP STEP-BY-STEP =====================
+   
     int hii(){
         return 0;
     }
@@ -363,7 +363,7 @@ public class GraphVisualizer extends Application {
                 String key2 = v + "-" + u;
                 boolean isOptimal = dpSelected.contains(key1) || dpSelected.contains(key2);
 
-                // STEP 1: highlight orange = evaluating
+               
                 final int stepNum = ++step;
                 Platform.runLater(() -> {
                     edgeLines[idx].setStroke(Color.ORANGE);
@@ -379,7 +379,7 @@ public class GraphVisualizer extends Application {
                 delay(600);
                 if (!isRunning) return;
 
-                // STEP 2: decide include or exclude
+                
                 final int fc = cost, fp = priority, fr = remaining;
 
                 if (isOptimal) {
@@ -416,7 +416,7 @@ public class GraphVisualizer extends Application {
                 delay(700);
             }
 
-            // done
+            
             long elapsed = (System.nanoTime() - startTime) / 1_000_000;
             final int totalC = cost, totalP = priority;
             Platform.runLater(() -> {
@@ -431,7 +431,7 @@ public class GraphVisualizer extends Application {
         }).start();
     }
 
-    // ===================== COMPARE (instant) =====================
+    
 
     void showCompare() {
         lblAlgorithm.setText("Algorithm: Compare (DP vs Greedy)");
@@ -477,7 +477,7 @@ public class GraphVisualizer extends Application {
         else                     lblAction.setText("Action: Both give SAME result!");
     }
 
-    // ===================== HELPERS =====================
+   
 
     void delay(int ms) {
         try { Thread.sleep(ms); } catch (Exception e) {}
@@ -522,7 +522,7 @@ public class GraphVisualizer extends Application {
         stepLog.clear();
     }
 
-    // ===================== LEGEND =====================
+    
    int john(){
     int a = 5, b= 10;
     return a+b;

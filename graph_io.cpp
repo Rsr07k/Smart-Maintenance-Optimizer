@@ -11,7 +11,7 @@
 
 using namespace std;
 
-// take input from user
+
 void inputGraph(int graph[100][100], int &budget, int &numEdges) {
 
     cout << "Budget: ";
@@ -73,7 +73,7 @@ void inputGraph(int graph[100][100], int &budget, int &numEdges) {
     }
 }
 
-// load from file
+
 bool loadGraphFromFile(int graph[100][100], int &budget, int &numEdges,
                        const string &filename) {
 
@@ -116,7 +116,7 @@ bool loadGraphFromFile(int graph[100][100], int &budget, int &numEdges,
     return true;
 }
 
-// save graph
+
 void saveToFile(int budget, int numEdges, const string &filename) {
 
     ofstream out(filename);
@@ -142,7 +142,7 @@ void saveToFile(int budget, int numEdges, const string &filename) {
     cout << "Saved to " << filename << "\n";
 }
 
-// save results
+
 void saveResultsToFile(const vector<int> &dp_selected,
                        const vector<int> &greedy_selected) {
 
@@ -163,7 +163,7 @@ void saveResultsToFile(const vector<int> &dp_selected,
     out.close();
 }
 
-// open JavaFX
+=
 void visualizeGraph(int budget, int numEdges) {
 
     saveToFile(budget, numEdges, "input.txt");

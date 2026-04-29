@@ -7,7 +7,7 @@
 
 using namespace std;
 
-// run dp
+
 vector<int> runDP(int budget, int numEdges,
                   vector<int> &bridgeIndices, bool &bridgesDone,
                   vector<int> &selected_bridges,
@@ -39,7 +39,7 @@ vector<int> runDP(int budget, int numEdges,
         }
     }
 
-    // reset flags
+    
     for (int i = 0; i < numEdges; i++)
         Roads[i].rejected = false;
 
@@ -62,7 +62,7 @@ vector<int> runDP(int budget, int numEdges,
         }
     }
 
-    // run knapsack on remaining roads
+    
     vector<int> dp_selected = optimizeMaintenance(remaining, Roads, numEdges);
 
     // totals
@@ -77,7 +77,7 @@ vector<int> runDP(int budget, int numEdges,
     return dp_selected;
 }
 
-// show result
+
 void showDP(const vector<int> &dp_sel,
             const vector<int> &selected_bridges,
             int dp_total_cost, int dp_total_priority) {

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-// run greedy
+
 vector<int> runGreedy(int budget, int numEdges) {
 
     vector<int> idx;
